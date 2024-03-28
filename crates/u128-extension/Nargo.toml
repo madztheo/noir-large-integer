@@ -1,0 +1,8 @@
+[package]
+name = "u128_extension"
+authors = ["Théo Madzou"]
+type = "lib"
+compiler_version = ">=0.24.0"
+
+[dependencies]
+
