@@ -8,7 +8,7 @@ use dep::std::wrapping_sub;
 // Compute a + b + carry, returning the result and the new carry over.
 pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
     let ret = a as Field + b as Field + carry as Field;
-    (ret as u64, (U128::from_integer(ret).large_shr(BITS)).to_integer())
+    (ret as u64, (U128::from_integer(ret) >> U128::from_integer(BITS)).to_integer())
 }
 
 // Compute a - (b + borrow), returning the result and the new borrow.
@@ -20,5 +20,5 @@ pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
 // Compute a + (b * c) + carry, returning the result and the new carry over.
 pub fn mac(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) {
     let ret = (a as Field) + ((b as Field) * (c as Field)) + (carry as Field);
-    (ret as u64, (U128::from_integer(ret).large_shr(BITS)).to_integer())
+    (ret as u64, (U128::from_integer(ret) >> U128::from_integer(BITS)).to_integer())
 }

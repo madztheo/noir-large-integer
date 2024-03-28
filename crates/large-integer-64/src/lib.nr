@@ -526,7 +526,7 @@ fn test_sub1() {
     assert(diff == LargeInteger::from_bytes([2]));
 }
 
-/*#[test]
+#[test]
 fn test_mul1() {
     let a = LargeInteger::from_bytes([2]);
     let b = LargeInteger::from_bytes([3]);
@@ -534,7 +534,18 @@ fn test_mul1() {
 
     assert(lo == LargeInteger::from_bytes([6]));
     assert(hi.is_zero());
-}*/
+}
+
+#[test]
+fn test_mul2() {
+    let max = LargeInteger { limbs: [0xffffffffffffffff; NUM_LIMBS] };
+    let b = LargeInteger::from_bytes([3]);
+    let (lo, hi) = max.mul(b);
+    // 0xffffffffffffffff * 3 = 0x2fffffffffffffffd
+    // So one 2 in the high part and 0xfffffffffffffffd in the low part
+    assert(hi == LargeInteger::from_bytes([2]));
+    assert(lo.limbs[0] == 0xfffffffffffffffd);
+}
 
 #[test]
 fn test_cmp1() {
@@ -718,4 +729,16 @@ fn test_div() {
     let (quo, rem) = a.div_unsafe(b);
     assert(quo == LargeInteger::from_integer(41));
     assert(rem == LargeInteger::from_integer(0));
+}
+
+#[test]
+fn test_mac() {
+    let max = 0xffffffffffffffff;
+    let a = max;
+    let b = 3;
+    let (res, carry) = utils::mac(0, a, b, 0);
+    // 0xffffffffffffffff * 3 = 0x2fffffffffffffffd
+    // So one 2 in the carry and 0xfffffffffffffffd as a result
+    assert(res == 0xfffffffffffffffd);
+    assert(carry == 2);
 }
