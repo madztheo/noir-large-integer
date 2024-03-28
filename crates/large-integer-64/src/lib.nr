@@ -484,7 +484,7 @@ fn test_to_bytes1() {
     let a = LargeInteger::zero();
     let b = LargeInteger::one();
 
-    let c = a.sub(b);
+    let (c, _) = a.sbb(b);
     assert(c.to_bytes() == [255 as u8; MAX_BYTES]);
 }
 
@@ -493,7 +493,7 @@ fn test_to_bits1() {
     let a = LargeInteger::zero();
     let b = LargeInteger::one();
 
-    let c = a.sub(b);
+    let (c, _) = a.sbb(b);
     assert(c.to_bits() == [1 as u1; MAX_BITS]);
 }
 
@@ -704,7 +704,7 @@ fn test_sbb2() {
 fn test_div() {
     let a = LargeInteger::from_integer(123);
     let b = LargeInteger::from_integer(3);
-    let (quo, rem) = a.div_unsafe(b);
+    let (quo, rem) = a.div(b);
     assert(quo == LargeInteger::from_integer(41));
     assert(rem == LargeInteger::from_integer(0));
 }
