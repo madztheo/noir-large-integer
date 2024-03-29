@@ -1,5 +1,6 @@
 [workspace]
 members = [
-    "crates/large-integer-64"
+    "crates/large-integer-32",
+    "crates/large-integer-64",
 ]
 

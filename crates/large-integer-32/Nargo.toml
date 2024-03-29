@@ -1,0 +1,9 @@
+[package]
+name = "large_integer_32"
+authors = ["Théo Madzou"]
+type = "lib"
+compiler_version = ">=0.24.0"
+
+[dependencies]
+u128_extension = { path = "../u128-extension" }
+
