@@ -273,6 +273,22 @@ impl LargeInteger {
         res
     }
 
+    // Returns the number of non-zero limbs needed to represent the LargeInteger instance.
+    fn nlimbs(self: Self) -> u64 {
+        let mut res = 0;
+        let mut done = false;
+        for i in 0..NUM_LIMBS {
+            if !done {
+                if self.limbs[NUM_LIMBS - i - 1] != 0 {
+                    res = (NUM_LIMBS - i - 1) as u64 + 1;
+                    done = true;
+                }
+            }
+        }
+
+        res
+    }
+
 
     /// Divides the LargeInteger instance by another, returning the quotient and remainder using long division.
     // WARNING: This is a simple binary long division. More efficient algorithms should be considered.
@@ -741,4 +757,17 @@ fn test_mac() {
     // So one 2 in the carry and 0xfffffffffffffffd as a result
     assert(res == 0xfffffffffffffffd);
     assert(carry == 2);
+}
+
+#[test]
+fn test_large_u128_div() {
+    let mut a = U128::from_hex("0xffffffffffffffffffffffffffffffff");
+    let mut b = U128::from_integer(5);
+    let mut quo = a.div_without_overflow(b);
+    assert(quo == U128::from_hex("0x33333333333333333333333333333333"));
+
+    a = U128::from_hex("0x7fffffffffffffffffffffffffffffff");
+    b = U128::from_integer(3);
+    quo = a.div_without_overflow(b);
+    assert(quo == U128::from_hex("0x2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
 }

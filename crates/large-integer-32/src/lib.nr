@@ -271,6 +271,22 @@ impl LargeInteger {
         res
     }
 
+    // Returns the number of non-zero limbs needed to represent the LargeInteger instance.
+    fn nlimbs(self: Self) -> u64 {
+        let mut res = 0;
+        let mut done = false;
+        for i in 0..NUM_LIMBS {
+            if !done {
+                if self.limbs[NUM_LIMBS - i - 1] != 0 {
+                    res = (NUM_LIMBS - i - 1) as u64 + 1;
+                    done = true;
+                }
+            }
+        }
+
+        res
+    }
+
 
     /// Divides the LargeInteger instance by another, returning the quotient and remainder using long division.
     // WARNING: This is a simple binary long division. More efficient algorithms should be considered.
