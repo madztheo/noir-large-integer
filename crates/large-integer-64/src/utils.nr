@@ -1,4 +1,4 @@
-use crate::BITS_PER_LIMB as BITS;
+use crate::BITS_PER_LIMB_u64 as BITS;
 use dep::u128_extension::U128Extension;
 use dep::std::wrapping_sub;
 

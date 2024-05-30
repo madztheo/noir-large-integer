@@ -1,4 +1,4 @@
-use crate::BITS_PER_LIMB as BITS;
+use crate::BITS_PER_LIMB_u32 as BITS;
 use dep::std::wrapping_sub;
 
 // NOTE: this file is forked from https://github.com/SetProtocol/noir-rsa
