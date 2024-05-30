@@ -50,7 +50,7 @@ impl LargeInteger {
             let limb_index = (i as u32) / (BYTES_PER_LIMB as u32);
             let byte_index = (i as u32) % (BYTES_PER_LIMB as u32);
 
-            res.limbs[limb_index as Field] |= (bytes[i] as u32) << (byte_index * 8);
+            res.limbs[limb_index as Field] |= (bytes[i] as u32) << (byte_index * 8) as u8;
         }
 
         res
@@ -168,12 +168,12 @@ impl LargeInteger {
         let mut res = self;
 
         let rshift = BITS_PER_LIMB as u32 - n;
-        let carry = if (n == 0) { 0 } else { self.limbs[NUM_LIMBS - 1] >> rshift };
+        let carry = if (n == 0) { 0 } else { self.limbs[NUM_LIMBS - 1] >> rshift as u8 };
 
         if (n > 0) {
-            res.limbs[0] = self.limbs[0] << n;
+            res.limbs[0] = self.limbs[0] << n as u8;
             for i in 1..NUM_LIMBS {
-                res.limbs[i] = (self.limbs[i] << n) | (self.limbs[i - 1] >> rshift);
+                res.limbs[i] = (self.limbs[i] << n as u8) | (self.limbs[i - 1] >> rshift as u8);
             }
         }
 
@@ -218,9 +218,9 @@ impl LargeInteger {
             let lshift = BITS_PER_LIMB as u32 - n;
 
             for i in 0..NUM_LIMBS-1 {
-                res.limbs[i] = (self.limbs[i] >> n) | (self.limbs[i + 1] << lshift);
+                res.limbs[i] = (self.limbs[i] >> n as u8) | (self.limbs[i + 1] << lshift as u8);
             }
-            res.limbs[NUM_LIMBS - 1] = self.limbs[NUM_LIMBS - 1] >> n;
+            res.limbs[NUM_LIMBS - 1] = self.limbs[NUM_LIMBS - 1] >> n as u8;
         }
 
 
@@ -473,17 +473,17 @@ impl Rem for LargeInteger {
     }
 }
 
-impl Shl for LargeInteger {
-    fn shl(self, other: Self) -> Self {
-        self.shl(other.to_integer())
-    }
-}
+// impl Shl for LargeInteger {
+//     fn shl(self, other: Self) -> Self {
+//         self.shl(other.to_integer())
+//     }
+// }
 
-impl Shr for LargeInteger {
-    fn shr(self, other: Self) -> Self {
-        self.shr(other.to_integer())
-    }
-}
+// impl Shr for LargeInteger {
+//     fn shr(self, other: Self) -> Self {
+//         self.shr(other.to_integer())
+//     }
+// }
 
 impl Eq for LargeInteger {
     fn eq(self: Self, other: Self) -> bool {
@@ -732,7 +732,7 @@ fn test_sbb2() {
     let (diff, borrow) = a.sbb(b);
 
     assert(diff == LargeInteger { limbs: [0xffffffff; NUM_LIMBS] });
-    assert(borrow >> (BITS_PER_LIMB - 1) == 1);
+    assert(borrow >> (BITS_PER_LIMB - 1) as u8 == 1);
 }
 
 
