@@ -8,20 +8,20 @@ mod utils;
 // NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint v0.1.0
 
 // Top-level constants related to the size of LargeInteger limbs and bytes.
-global NUM_LIMBS: u32  = 192; /// Number of limbs.
-global BITS_PER_LIMB: u32  = 32; /// Number of bits per limb.
-global BYTES_PER_LIMB: u32  = 4; /// Number of bytes per limb (BITS_PER_LIMB / 8).
-global MAX_BITS: u32 = 6144; /// Maximum number of bits (NUM_LIMBS * BITS_PER_LIMB).
-global MAX_BYTES: u32  = 768; /// Maximum number of bytes (NUM_LIMBS * BYTES_PER_LIMB).
+global NUM_LIMBS_u32: u32  = 192; /// Number of limbs.
+global BITS_PER_LIMB_u32: u32  = 32; /// Number of bits per limb.
+global BYTES_PER_LIMB_u32: u32  = 4; /// Number of bytes per limb (BITS_PER_LIMB_u32 / 8).
+global MAX_BITS_u32: u32 = 6144; /// Maximum number of bits (NUM_LIMBS_u32 * BITS_PER_LIMB_u32).
+global MAX_BYTES_u32: u32  = 768; /// Maximum number of bytes (NUM_LIMBS_u32 * BYTES_PER_LIMB_u32).
 
 struct LargeInteger {
-    limbs: [u32; NUM_LIMBS],
+    limbs: [u32; NUM_LIMBS_u32],
 }
 
 impl LargeInteger {
     /// Creates a new LargeInteger initialized to zero.
     pub fn zero() -> Self {
-        Self { limbs: [0; NUM_LIMBS] }
+        Self { limbs: [0; NUM_LIMBS_u32] }
     }
 
     /// Creates a new LargeInteger initialized to one.
@@ -47,23 +47,23 @@ impl LargeInteger {
     pub fn from_bytes<B>(bytes: [u8; B]) -> Self {
         let mut res = LargeInteger::zero();
         for i in 0..bytes.len() {
-            let limb_index = (i as u32) / (BYTES_PER_LIMB as u32);
-            let byte_index = (i as u32) % (BYTES_PER_LIMB as u32);
+            let limb_index = (i as u32) / (BYTES_PER_LIMB_u32 as u32);
+            let byte_index = (i as u32) % (BYTES_PER_LIMB_u32 as u32);
 
-            res.limbs[limb_index as Field] |= (bytes[i] as u32) << (byte_index * 8);
+            res.limbs[limb_index as Field] |= (bytes[i] as u32) << (byte_index * 8) as u8;
         }
 
         res
     }
 
     /// Returns the little-endian byte array representation of the LargeInteger.
-    fn to_bytes(self: Self) -> [u8; MAX_BYTES] {
-        let mut res = [0 as u8; MAX_BYTES];
+    fn to_bytes(self: Self) -> [u8; MAX_BYTES_u32] {
+        let mut res = [0 as u8; MAX_BYTES_u32];
     
-        for i in 0..NUM_LIMBS {
-            let limb_bytes = (self.limbs[i] as Field).to_le_bytes(BYTES_PER_LIMB as u32);
-            for j in 0..BYTES_PER_LIMB {
-                let idx = i * BYTES_PER_LIMB + j;
+        for i in 0..NUM_LIMBS_u32 {
+            let limb_bytes = (self.limbs[i] as Field).to_le_bytes(BYTES_PER_LIMB_u32 as u32);
+            for j in 0..BYTES_PER_LIMB_u32 {
+                let idx = i * BYTES_PER_LIMB_u32 + j;
                 res[idx] = limb_bytes[j];
             }
         }
@@ -72,13 +72,13 @@ impl LargeInteger {
     }
 
     /// Returns the bit array representation of the LargeInteger, with LSB at index 0.
-    fn to_bits(self: Self) -> [u1; MAX_BITS] {
-        let mut res = [0 as u1; MAX_BITS];
+    fn to_bits(self: Self) -> [u1; MAX_BITS_u32] {
+        let mut res = [0 as u1; MAX_BITS_u32];
     
-        for i in 0..NUM_LIMBS {
-            let limb_bits = (self.limbs[i] as Field).to_le_bits(BITS_PER_LIMB as u32);
-            for j in 0..BITS_PER_LIMB {
-                let idx = i * BITS_PER_LIMB + j;
+        for i in 0..NUM_LIMBS_u32 {
+            let limb_bits = (self.limbs[i] as Field).to_le_bits(BITS_PER_LIMB_u32 as u32);
+            for j in 0..BITS_PER_LIMB_u32 {
+                let idx = i * BITS_PER_LIMB_u32 + j;
                 res[idx] = limb_bits[j];
             }
         }
@@ -92,7 +92,7 @@ impl LargeInteger {
         let mut res = LargeInteger::zero();
         let mut carry = 0 as u32;
 
-        for i in 0..NUM_LIMBS {
+        for i in 0..NUM_LIMBS_u32 {
             let (sum, new_carry) = utils::adc(self.limbs[i], other.limbs[i], carry);
             res.limbs[i] = sum;
             carry = new_carry;
@@ -114,7 +114,7 @@ impl LargeInteger {
         let mut res = LargeInteger::zero();
         let mut borrow = 0;
 
-        for i in 0..NUM_LIMBS {
+        for i in 0..NUM_LIMBS_u32 {
             let (diff, new_borrow) = utils::sbb(self.limbs[i], other.limbs[i], borrow);
             res.limbs[i] = diff;
             borrow = new_borrow;
@@ -136,15 +136,15 @@ impl LargeInteger {
         let mut lo = LargeInteger::zero();
         let mut hi = LargeInteger::zero();
 
-        for i in 0..NUM_LIMBS {
+        for i in 0..NUM_LIMBS_u32 {
             let mut carry = 0;
 
-            for j in 0..NUM_LIMBS {
+            for j in 0..NUM_LIMBS_u32 {
                 let k = i + j;
 
-                if k as u32 >= NUM_LIMBS as u32 {
-                    let (n, c) = utils::mac(hi.limbs[k - NUM_LIMBS], self.limbs[i], other.limbs[j], carry);
-                    hi.limbs[k - NUM_LIMBS] = n;
+                if k as u32 >= NUM_LIMBS_u32 as u32 {
+                    let (n, c) = utils::mac(hi.limbs[k - NUM_LIMBS_u32], self.limbs[i], other.limbs[j], carry);
+                    hi.limbs[k - NUM_LIMBS_u32] = n;
                     carry = c;
                 } else {
                     let (n, c) = utils::mac(lo.limbs[k], self.limbs[i], other.limbs[j], carry);
@@ -163,17 +163,17 @@ impl LargeInteger {
     /// where `0 <= n < Limb::BITS`,
     /// Returns the shifted result and the carry.
     fn shl_limb(self: Self, n: u32) -> (Self, u32) {
-        assert(n < BITS_PER_LIMB as u32);
+        assert(n < BITS_PER_LIMB_u32 as u32);
 
         let mut res = self;
 
-        let rshift = BITS_PER_LIMB as u32 - n;
-        let carry = if (n == 0) { 0 } else { self.limbs[NUM_LIMBS - 1] >> rshift };
+        let rshift = BITS_PER_LIMB_u32 as u32 - n;
+        let carry = if (n == 0) { 0 } else { self.limbs[NUM_LIMBS_u32 - 1] >> rshift as u8 };
 
         if (n > 0) {
-            res.limbs[0] = self.limbs[0] << n;
-            for i in 1..NUM_LIMBS {
-                res.limbs[i] = (self.limbs[i] << n) | (self.limbs[i - 1] >> rshift);
+            res.limbs[0] = self.limbs[0] << n as u8;
+            for i in 1..NUM_LIMBS_u32 {
+                res.limbs[i] = (self.limbs[i] << n as u8) | (self.limbs[i - 1] >> rshift as u8);
             }
         }
 
@@ -190,11 +190,11 @@ impl LargeInteger {
     fn shl(self: Self, n: u32) -> Self {
         let mut res = LargeInteger::zero();
 
-        if n < MAX_BITS as u32 {
-            let shift_num = n / (BITS_PER_LIMB as u32);
-            let rem = n % (BITS_PER_LIMB as u32);
+        if n < MAX_BITS_u32 as u32 {
+            let shift_num = n / (BITS_PER_LIMB_u32 as u32);
+            let rem = n % (BITS_PER_LIMB_u32 as u32);
             
-            for i in shift_num..NUM_LIMBS {
+            for i in shift_num..NUM_LIMBS_u32 {
                 //if i as u32 >= shift_num {
                 res.limbs[i as u32] = self.limbs[i as u32 - shift_num];
                 //}
@@ -210,17 +210,17 @@ impl LargeInteger {
     /// Shifts the LargeInteger instance to the right by a specified number of bits `n`.
     /// where `0 <= n < Limb::BITS`,
     fn shr_limb(self: Self, n: u32) -> Self {
-        assert(n < BITS_PER_LIMB as u32);
+        assert(n < BITS_PER_LIMB_u32 as u32);
 
         let mut res = self;
 
         if (n > 0) {
-            let lshift = BITS_PER_LIMB as u32 - n;
+            let lshift = BITS_PER_LIMB_u32 as u32 - n;
 
-            for i in 0..NUM_LIMBS-1 {
-                res.limbs[i] = (self.limbs[i] >> n) | (self.limbs[i + 1] << lshift);
+            for i in 0..NUM_LIMBS_u32-1 {
+                res.limbs[i] = (self.limbs[i] >> n as u8) | (self.limbs[i + 1] << lshift as u8);
             }
-            res.limbs[NUM_LIMBS - 1] = self.limbs[NUM_LIMBS - 1] >> n;
+            res.limbs[NUM_LIMBS_u32 - 1] = self.limbs[NUM_LIMBS_u32 - 1] >> n as u8;
         }
 
 
@@ -237,13 +237,13 @@ impl LargeInteger {
     fn shr(self: Self, n: u32) -> Self {
         let mut res = LargeInteger::zero();
 
-        if n < MAX_BITS as u32 {
-            let shift_num = n / (BITS_PER_LIMB as u32);
-            let rem = n % (BITS_PER_LIMB as u32);
+        if n < MAX_BITS_u32 as u32 {
+            let shift_num = n / (BITS_PER_LIMB_u32 as u32);
+            let rem = n % (BITS_PER_LIMB_u32 as u32);
 
             // for i in 0..shift_num {
-            for i in 0..NUM_LIMBS {
-                if i as u32 + shift_num < NUM_LIMBS as u32 {
+            for i in 0..NUM_LIMBS_u32 {
+                if i as u32 + shift_num < NUM_LIMBS_u32 as u32 {
                     res.limbs[i] = self.limbs[i as Field + shift_num as Field];
                 }
             }
@@ -259,10 +259,10 @@ impl LargeInteger {
         let bits = LargeInteger::to_bits(self);
         let mut res = 0;
         let mut done = false;
-        for i in 0..MAX_BITS {
+        for i in 0..MAX_BITS_u32 {
             if !done {
-                if bits[MAX_BITS - i - 1] != 0 {
-                    res = (MAX_BITS - i - 1) as u32 + 1;
+                if bits[MAX_BITS_u32 - i - 1] != 0 {
+                    res = (MAX_BITS_u32 - i - 1) as u32 + 1;
                     done = true;
                 }
             }
@@ -275,10 +275,10 @@ impl LargeInteger {
     fn nlimbs(self: Self) -> u64 {
         let mut res = 0;
         let mut done = false;
-        for i in 0..NUM_LIMBS {
+        for i in 0..NUM_LIMBS_u32 {
             if !done {
-                if self.limbs[NUM_LIMBS - i - 1] != 0 {
-                    res = (NUM_LIMBS - i - 1) as u64 + 1;
+                if self.limbs[NUM_LIMBS_u32 - i - 1] != 0 {
+                    res = (NUM_LIMBS_u32 - i - 1) as u64 + 1;
                     done = true;
                 }
             }
@@ -302,7 +302,7 @@ impl LargeInteger {
             let bit_diff = self.nbits() - other.nbits();
             let mut c = other.shl(bit_diff);
 
-            for i in 0..MAX_BITS+1 {
+            for i in 0..MAX_BITS_u32+1 {
                 if i as u32 <= bit_diff {
                     if rem.gte(c) {
                         rem = rem.sub(c);
@@ -321,7 +321,7 @@ impl LargeInteger {
     /// Checks if the two LargeInteger instances are equal.
     fn eq(self: Self, other: Self) -> bool {
         let mut is_eq = true;
-        for i in 0..NUM_LIMBS {
+        for i in 0..NUM_LIMBS_u32 {
             is_eq = is_eq & (self.limbs[i] == other.limbs[i]);
         }
         is_eq
@@ -372,7 +372,7 @@ impl LargeInteger {
     
     // Returns self * other % modulus.
     fn mulmod(self: Self, other: Self, modulus: Self) -> Self {
-        // We assume that the mul is < 2^MAX_BITS, so we can just mod the low part.
+        // We assume that the mul is < 2^MAX_BITS_u32, so we can just mod the low part.
         let (lo, _hi) = self.mul(other);
         assert(_hi.is_zero());
 
@@ -411,7 +411,7 @@ impl LargeInteger {
         let mut res = LargeInteger::one();
         let mut pow = self;
 
-        // TODO: Enable e up to MAX_BITS for generalization
+        // TODO: Enable e up to MAX_BITS_u32 for generalization
         for i in 0..17 {
             if e_bits[i] as u1 == 1 {
                 res = res.mulmod(pow, modulus);
@@ -473,17 +473,17 @@ impl Rem for LargeInteger {
     }
 }
 
-impl Shl for LargeInteger {
-    fn shl(self, other: Self) -> Self {
-        self.shl(other.to_integer())
-    }
-}
+// impl Shl for LargeInteger {
+//     fn shl(self, other: Self) -> Self {
+//         self.shl(other.to_integer())
+//     }
+// }
 
-impl Shr for LargeInteger {
-    fn shr(self, other: Self) -> Self {
-        self.shr(other.to_integer())
-    }
-}
+// impl Shr for LargeInteger {
+//     fn shr(self, other: Self) -> Self {
+//         self.shr(other.to_integer())
+//     }
+// }
 
 impl Eq for LargeInteger {
     fn eq(self: Self, other: Self) -> bool {
@@ -510,7 +510,7 @@ fn test_to_bytes1() {
     let b = LargeInteger::one();
 
     let (c, _) = a.sbb(b);
-    assert(c.to_bytes() == [255 as u8; MAX_BYTES]);
+    assert(c.to_bytes() == [255 as u8; MAX_BYTES_u32]);
 }
 
 #[test]
@@ -519,7 +519,7 @@ fn test_to_bits1() {
     let b = LargeInteger::one();
 
     let (c, _) = a.sbb(b);
-    assert(c.to_bits() == [1 as u1; MAX_BITS]);
+    assert(c.to_bits() == [1 as u1; MAX_BITS_u32]);
 }
 
 #[test]
@@ -552,7 +552,7 @@ fn test_mul1() {
 
 #[test]
 fn test_mul2() {
-    let max = LargeInteger { limbs: [0xffffffff; NUM_LIMBS] };
+    let max = LargeInteger { limbs: [0xffffffff; NUM_LIMBS_u32] };
     let b = LargeInteger::from_bytes([3]);
     let (lo, hi) = max.mul(b);
     // 0xffffffff * 3 = 0x2fffffffd
@@ -600,7 +600,7 @@ fn test_shl1() {
 #[test]
 fn test_shl2() {
     let a = LargeInteger::from_bytes([1, 2]);
-    let b = a.shl(MAX_BITS as u32);
+    let b = a.shl(MAX_BITS_u32 as u32);
 
     assert(b.is_zero());
 }
@@ -612,7 +612,7 @@ fn test_shl3() {
 
     let bytes = b.to_bytes();
 
-    let mut expected = [0 as u8; MAX_BYTES];
+    let mut expected = [0 as u8; MAX_BYTES_u32];
     expected[0] = 2;
     expected[1] = 4;
 
@@ -646,7 +646,7 @@ fn test_shr1() {
 #[test]
 fn test_shr2() {
     let a = LargeInteger::from_bytes([1, 2]);
-    let b = a.shr(MAX_BITS as u32);
+    let b = a.shr(MAX_BITS_u32 as u32);
 
     assert(b.is_zero());
 }
@@ -658,7 +658,7 @@ fn test_shr3() {
 
     let bytes = b.to_bytes();
 
-    let mut expected = [0 as u8; MAX_BYTES];
+    let mut expected = [0 as u8; MAX_BYTES_u32];
     expected[0] = 1;
     expected[1] = 2;
 
@@ -731,8 +731,8 @@ fn test_sbb2() {
     let b = LargeInteger::from_integer(2);
     let (diff, borrow) = a.sbb(b);
 
-    assert(diff == LargeInteger { limbs: [0xffffffff; NUM_LIMBS] });
-    assert(borrow >> (BITS_PER_LIMB - 1) == 1);
+    assert(diff == LargeInteger { limbs: [0xffffffff; NUM_LIMBS_u32] });
+    assert(borrow >> (BITS_PER_LIMB_u32 - 1) as u8 == 1);
 }
 
 

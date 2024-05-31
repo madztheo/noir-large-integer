@@ -1,4 +1,4 @@
-use crate::BITS_PER_LIMB as BITS;
+use crate::BITS_PER_LIMB_u64 as BITS;
 use dep::u128_extension::U128Extension;
 use dep::std::wrapping_sub;
 
@@ -13,7 +13,7 @@ pub fn adc(a: u64, b: u64, carry: u64) -> (u64, u64) {
 
 // Compute a - (b + borrow), returning the result and the new borrow.
 pub fn sbb(a: u64, b: u64, borrow: u64) -> (u64, u64) {
-    let ret = U128::from_integer(a).wrapping_sub(U128::from_integer(b) + (U128::from_integer(borrow) >> U128::from_integer(BITS - 1)));
+    let ret = U128::from_integer(a).wrapping_sub(U128::from_integer(b) + (U128::from_integer(borrow) >> (BITS - 1) as u8));
     (ret.to_integer(), (ret.large_shr(U128::from_integer(BITS))).to_integer())
 }
 
